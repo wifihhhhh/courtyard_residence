@@ -1,0 +1,516 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Ma Shan Zheng", "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+}
+
+/* 定义新中式主题变量 - 配色 */
+:root {
+    /* 基底色 */
+    --bg-paper: #F0EAD6; /* 古纸米白 */
+    --bg-gray: #E8E4D6;  /* 雅致浅灰 */
+    --text-main: #5D4037; /* 深棕黑（主文字） */
+    --text-sub: #8B7D6B;  /* 浅棕灰（次文字） */
+    
+    /* 点缀色（激活/强调） */
+    --accent-gold: #a59770; /* 暗金 */
+    --accent-red: #916767;  /* 朱红 */
+    
+    /* 毛玻璃参数 - 恢复毛玻璃，设置20px模糊+白色半透明背景 */
+    --glass-bg: rgba(255, 255, 255, 0.1); /* 核心：白色半透明背景 */
+    --glass-bg-hover: rgba(255, 255, 255, 0.15); /* 悬浮时稍亮 */
+    --glass-border: 1px solid rgba(240, 234, 214, 0.3);
+    --glass-border-active: 1px solid var(--accent-gold);
+    --glass-blur: 5px; /* 核心：20px模糊 */
+    --glass-shadow: 0 4px 20px rgba(93, 64, 55, 0.08);
+    --glass-shadow-hover: 0 8px 30px rgba(93, 64, 55, 0.12);
+}
+
+/* 背景容器 - 适配古风纹理 */
+.background-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-image: url('../古风纹理银色.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    /* 古风柔化滤镜：轻微降噪 */
+    /* filter: sepia(5%) brightness(0.98) contrast(1.02) saturate(0.95); */
+    z-index: -2;
+}
+
+body {
+    background-color: transparent;
+    overflow: hidden;
+    height: 100vh;
+    overflow-x: auto;
+    overflow-y: auto;
+    color: var(--text-main); /* 深棕黑主文字 */
+    position: relative;
+}
+
+/* 毛玻璃通用样式 - 新中式重构 */
+.glass-effect {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    border-radius: 20px; /* 圆角略收，更显雅致 */
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* 悬浮上浮效果 */
+.glass-hover:hover {
+    transform: translateY(-3px); /* 上浮幅度减小，更沉稳 */
+    box-shadow: var(--glass-shadow-hover);
+    background: var(--glass-bg-hover);
+}
+
+/* 头部毛玻璃样式 - 博物馆导航栏风格 */
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    z-index: 100;
+    /* 浅灰基底，更贴近博物馆顶部导航 */
+    background: rgba(59, 59, 56, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(139, 125, 107, 0.2);
+}
+
+.header h1 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #fff;
+    /* color: var(--text-main); */
+    text-shadow: none; /* 移除白字阴影，改用实色更清晰 */
+    letter-spacing: 1px; /* 增加字距，更具古风 */
+}
+
+/* 主布局 */
+.analysis-page {
+    width: 100%;
+    height: 100vh;
+    padding: 70px 24px 24px;
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 24px;
+}
+
+/* 左侧菜单列 */
+.menu-column {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* 主菜单按钮 - 新中式毛玻璃 */
+.main-menu-btn {
+    width: 100%;
+    padding: 14px 12px;
+    color: var(--text-main);
+    font-size: 17px;
+    font-weight: 500;
+    cursor: pointer;
+    background: var(--glass-bg); /* 使用毛玻璃背景变量 */
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: var(--glass-border);
+    border-radius: 12px;
+    box-shadow: var(--glass-shadow);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 0.5px;
+}
+
+.main-menu-btn.active {
+    /* 激活态：保留毛玻璃背景，突出边框和文字颜色 */
+    background: rgba(165, 151, 112, 0.15);
+    color: var(--accent-gold);
+    font-weight: 600;
+    border-color: var(--glass-border-active);
+}
+
+.main-menu-btn:hover {
+    background: var(--glass-bg-hover); /* 悬浮毛玻璃背景 */
+    transform: translateY(-2px);
+}
+
+/* 子菜单容器 */
+.sub-menu-container {
+    width: 100%;
+    height: calc(100vh - 180px);
+    padding: 12px;
+    overflow-y: auto;
+    background: var(--glass-bg); /* 毛玻璃背景 */
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid rgba(240, 234, 214, 0.25);
+    border-radius: 12px;
+    box-shadow: var(--glass-shadow);
+}
+
+/* 子菜单滚动条美化（增强古风） */
+.sub-menu-container::-webkit-scrollbar {
+    width: 6px;
+}
+.sub-menu-container::-webkit-scrollbar-thumb {
+    background: var(--text-sub);
+    border-radius: 3px;
+}
+.sub-menu-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sub-menu-item {
+    width: 100%;
+    padding: 8px 10px;
+    margin-bottom: 4px;
+    background-color: transparent; /* 保持透明，继承父容器毛玻璃 */
+    border: none;
+    border-radius: 8px;
+    color: var(--text-main);
+    font-size: 15px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: 0.3px;
+}
+
+.sub-menu-item:hover {
+    background: rgba(255, 255, 255, 0.05); /* 悬浮轻微高亮 */
+}
+
+.sub-menu-item.active {
+    background: rgba(165, 151, 112, 0.1); /* 激活态轻微高亮 */
+    color: var(--accent-gold);
+    font-weight: 500;
+}
+
+/* 右侧内容区 */
+.right-content {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    gap: 20px;
+}
+
+.top-cards {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
+
+.top-cards-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    box-sizing: border-box;
+}
+
+.bottom-charts {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+}
+
+/* 核心卡片样式 - 毛玻璃 */
+.card {
+    background: var(--glass-bg); /* 毛玻璃背景 */
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    border-radius: 16px;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 100%;
+}
+
+/* 单独写卡片的悬浮效果 */
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--glass-shadow-hover);
+    background: var(--glass-bg-hover); /* 悬浮毛玻璃背景 */
+    border-color: rgba(240, 234, 214, 0.4);
+}
+
+.chart-card {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+}
+
+/* 图表标题样式 - 新中式 */
+.chart-title {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-main);
+    /* 标题背景改为透明 */
+    background: transparent;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 4px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(71, 62, 53, 0.5);
+    z-index: 10;
+    letter-spacing: 0.5px;
+}
+
+/* 分析标题 */
+.analysis-title {
+    width: 100%;
+    text-align: center;
+    padding: 14px 0;
+    margin-bottom: 18px;
+    border-bottom: 1px solid rgba(139, 125, 107, 0.2);
+    box-sizing: border-box;
+    margin: 0 auto 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.analysis-title-text {
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--text-main);
+    letter-spacing: 3px; /* 增大字距，强化古风 */
+    padding: 0 20px;
+    position: relative;
+    display: inline-block;
+    text-shadow: none;
+}
+
+.analysis-title-text::before,
+.analysis-title-text::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 14px;
+    height: 1px;
+    background-color: var(--text-sub);
+    transform: translateY(-50%);
+}
+
+.analysis-title-text::before { left: 0; }
+.analysis-title-text::after { right: 0; }
+
+/* 图片切换卡片 */
+.img-switch-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 18px 18px 28px; /* 增加底部内边距 */
+    height: 100%;
+    min-height: 400px; /* 根据需要调整，确保有足够高度 */
+}
+
+.img-display {
+    width: 100%;
+    height: calc(100% - 40px); /* 减去按钮和标题的高度，避免重叠 */
+    border-radius: 12px;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 1px solid rgba(240, 234, 214, 0.3);
+    background-size: cover;
+    background-position: center;
+    margin-top: 10px;
+}
+
+/* 切换按钮 */
+.switch-btns {
+    display: flex;
+    justify-content: center; /* 从space-around改为center，居中排列 */
+    gap: 12px; /* 按钮之间的间距，替代space-around */
+    width: 100%;
+    margin-bottom: 18px;
+    position: relative;
+    z-index: 20;
+}
+
+/* 信息卡片 */
+.info-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 18px;
+    text-align: left;
+    overflow-y: auto;
+    height: 100%;
+}
+
+/* 信息卡片滚动条 */
+.info-card::-webkit-scrollbar {
+    width: 5px;
+}
+.info-card::-webkit-scrollbar-thumb {
+    background: var(--text-sub);
+    border-radius: 2.5px;
+}
+.info-card::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.basic-info {
+    line-height: 1.9;
+    font-size: 17px;
+    color: var(--text-main);
+    flex-shrink: 0;
+    letter-spacing: 0.3px;
+}
+
+.culture-scene-img {
+    width: 100%;
+    height: 80%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    /* 图片容器改为完全透明 */
+    background: transparent;
+    border: 1px solid rgba(240, 234, 214, 0.3);
+    margin-bottom: 14px;
+    overflow: hidden;
+}
+
+.desc-text {
+    font-size: 15px;
+    color: var(--text-sub);
+    line-height: 1.7;
+    margin-top: 8px;
+    letter-spacing: 0.3px;
+}
+
+/* 图表容器 */
+#radarChart, #pieChart {
+    width: 100%;
+    flex: 1;
+    min-height: 200px;
+}
+
+/* 词云卡片 - 恢复毛玻璃背景 */
+.wordcloud-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-top: 35px;
+}
+
+.wordcloud-img {
+    width: 100%;
+    height: 85%;
+    border-radius: 12px;
+    /* 词云背景改为完全透明 */
+    background: transparent;
+    border: 1px solid rgba(139, 125, 107, 0.2);
+    object-fit: contain;
+    min-height: 250px;
+}
+
+/* 图标样式 */
+.icon-home, .icon-compare {
+    width: 17px;
+    height: 17px;
+    stroke: currentColor;
+    stroke-width: 2.2; /* 描边加粗，更显古朴 */
+    fill: none;
+    font-family: "Ma Shan Zheng", "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+}
+
+.culture-scene {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: space-between;
+}
+
+.culture-scene-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 12px;
+}
+
+/* 移动端适配 */
+@media (max-width: 992px) {
+    .analysis-page {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+    }
+    .menu-column {
+        flex-direction: row;
+        margin-bottom: 16px;
+        gap: 10px;
+    }
+    .main-menu-btn {
+        flex: 1;
+        padding: 12px 8px;
+        font-size: 15px;
+    }
+    .sub-menu-container {
+        height: auto;
+        max-height: 120px;
+    }
+    .top-cards-content {
+        grid-template-columns: 1fr;
+    }
+    .bottom-charts {
+        grid-template-columns: 1fr;
+    }
+    .img-display {
+        height: 60%;
+    }
+    .culture-scene-img {
+        height: 100%;
+    }
+    .wordcloud-img {
+        height: 250px;
+    }
+}
+
+@media (max-width: 768px) {
+    .analysis-title-text {
+        font-size: 22px;
+        letter-spacing: 2px;
+        padding: 0 16px;
+    }
+    .analysis-title-text::before,
+    .analysis-title-text::after {
+        width: 10px;
+    }
+    .header h1 {
+        font-size: 1.1rem;
+    }
+}

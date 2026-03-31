@@ -1,0 +1,52 @@
+.back-btn {
+  margin-bottom: 20px;
+  display: inline-block;
+  text-decoration: none;
+}
+
+.house-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 30px;
+}
+
+.house-item {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: box-shadow 0.3s;
+}
+
+.house-item:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.house-img img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+}
+
+.house-info {
+  padding: 20px;
+}
+
+.house-name {
+  font-size: 22px;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.house-desc {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 15px;
+}
+
+.detail-btn {
+  background: #e67e22;
+}
+
+.detail-btn:hover {
+  background: #d35400;
+}
