@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/map/js/china.js"></script>
+    <title>合院九州 · 地域适应</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .right-content {
+            gap: 24px;
+            height: 100%;
+        }
+        
+        /* 第一行：2个卡片（散点图+漏斗图） */
+        .top-charts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            padding: 4px;
+            height: 100%;
+        }
+        
+        /* 第二行：5个卡片（5张雷达图） */
+        .bottom-charts {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+            gap: 16px;
+            height: 100%;
+        }
+
+        /* 图表容器样式 */
+        #scatterChart, #funnelChart, 
+        #radarChart1, #radarChart2, #radarChart3, #radarChart4, #radarChart5 {
+            width: 100%;
+            flex: 1;
+            min-height: 180px;
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 1200px) {
+            .bottom-charts {
+                grid-template-columns: 1fr 1fr 1fr;
+                grid-template-rows: 1fr 1fr;
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-container"></div>
+
+    <div class="header">
+        <h1>合院九州·典型合院式民居对比可视化平台</h1>
+    </div>
+
+    <div class="analysis-page" id="analysisPage">
+        <!-- 左侧菜单 -->
+        <div class="menu-column">
+            <button class="main-menu-btn" id="menu1">典型民居图鉴</button>
+            <button class="main-menu-btn active" id="menu2">民居对比分析</button>
+            
+            <div class="sub-menu-container" id="subMenu">
+                <button class="sub-menu-item" data-type="history">历史发展</button>
+                <button class="sub-menu-item active" data-type="adaptation">地域适应</button>
+                <button class="sub-menu-item" data-type="wisdom">建筑智慧</button>
+                <button class="sub-menu-item" data-type="culture">文化关联</button>
+                <button class="sub-menu-item" data-type="modern">现代发展</button>
+            </div>
+        </div>
+
+        <!-- 右侧图表区域 -->
+        <div class="right-content">
+            <!-- 第一行：散点图 + 漏斗图 -->
+            <div class="top-charts">
+                <div class="card chart-card">
+                    <div class="chart-title">屋顶坡度与墙体厚度</div>
+                    <div id="scatterChart"></div>
+                </div>
+                <div class="card chart-card">
+                    <div class="chart-title">地区天气情况</div>
+                    <div id="funnelChart"></div>
+                </div>
+            </div>
+            
+            <!-- 第二行：5张雷达图 -->
+            <div class="bottom-charts">
+                <div class="card chart-card">
+                    <div class="chart-title">北京四合院</div>
+                    <div id="radarChart1"></div>
+                </div>
+                <div class="card chart-card">
+                    <div class="chart-title">徽派民居</div>
+                    <div id="radarChart2"></div>
+                </div>
+                <div class="card chart-card">
+                    <div class="chart-title">广府镬耳屋</div>
+                    <div id="radarChart3"></div>
+                </div>
+                <div class="card chart-card">
+                    <div class="chart-title">云南一颗印</div>
+                    <div id="radarChart4"></div>
+                </div>
+                <div class="card chart-card">
+                    <div class="chart-title">西北窑洞</div>
+                    <div id="radarChart5"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/sub2.js"></script>
+</body>
+</html>

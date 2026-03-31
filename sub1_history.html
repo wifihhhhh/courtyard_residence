@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <title>合院九州 · 历史变革</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .right-content {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            gap: 24px;
+            padding: 0 16px;
+        }
+
+        /* 时间轴容器：强制显示，固定高度 */
+        .timeline-wrapper {
+            width: 100%;
+            position: relative;
+            display: block !important;
+            flex: 1;
+        }
+
+        /* 强制显示时间轴图表 */
+        #timelineChart {
+            width: 100% !important;
+            height: 100% !important;
+            display: block !important;
+            opacity: 1 !important;
+            min-height: 200px;
+        }
+
+        /* 详情区域：固定布局，适配卡片样式 */
+        .detail-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: center;
+            flex: 1;
+        }
+
+        /* 文字区域样式优化 */
+        .detail-text {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 18px;
+            padding: 8px;
+        }
+
+        /* 图片区域固定大小 */
+        .detail-img {
+            width: 80%;
+            max-width: 500px;
+            height: auto;
+            max-height: 400px;
+            margin: 0 auto;
+            border-radius: 12px;
+            overflow: hidden;
+            border: var(--glass-border);
+        }
+        .detail-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 放大文字样式 */
+        .timeline-year {
+            font-size: 36px !important;
+            font-weight: 700;
+            color: var(--text-main) !important;
+        }
+        .timeline-title {
+            font-size: 24px !important;
+            font-weight: 600;
+            color: var(--text-main) !important;
+        }
+        .timeline-desc {
+            font-size: 18px !important;
+            line-height: 1.8;
+            color: var(--text-sub) !important;
+        }
+        .plan-svg {
+            display: flex;
+            flex-direction: row;
+            gap: 0;
+            height: 100%;
+            }
+        /* 响应式适配 */
+        @media (max-width: 900px) {
+            .detail-wrapper {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            .chart-card {
+                height: auto;
+                min-height: 600px;
+            }
+        }
+
+        /* 平面图SVG内部样式 */
+        .plan-svg svg .outer {stroke:var(--text-main);stroke-width:3;fill:none;}
+        .plan-svg svg .house {stroke:var(--text-main);stroke-width:2;fill:var(--bg-gray);}
+        .plan-svg svg .sub {stroke:var(--accent-gold);stroke-width:2;fill:var(--bg-paper);}
+        .plan-svg svg .yard {stroke:var(--text-sub);stroke-dasharray:3,3;fill:var(--bg-paper);}
+        .plan-svg svg .label {font-family:inherit;fill:var(--text-main);font-size:12px;text-anchor:middle;}
+
+        /* 分类筛选按钮 */
+        .category-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 42px;
+            padding: 8px;
+            border-radius: 8px;
+        }
+        .filter-btn {
+            padding: 6px 12px;
+            border: 1px solid var(--text-sub);
+            border-radius: 4px;
+            background: transparent;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        .filter-btn.active {
+            background: var(--accent-gold);
+            border-color: var(--accent-gold);
+            color: #fff;
+        }
+        .filter-btn:hover {
+            background: rgba(212,185,140,0.2);
+        }
+
+        /* 空间高亮样式 */
+        .space-highlight {
+            fill: #d1bd7f !important; /* 高亮色 */
+            stroke: #6f6e6a !important;
+        }
+        .yard-highlight {
+            stroke: #d1bd7f !important;
+            stroke-width: 2 !important;
+        }
+
+        /* hover提示框 */
+        .space-tooltip {
+            position: absolute;
+            padding: 8px 12px;
+            background: rgba(68, 46, 20, 0.7);
+            color: #fff;
+            border-radius: 4px;
+            font-size: 14px;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.2s;
+            max-width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="background-container"></div>
+
+    <div class="header">
+        <h1>合院九州·典型合院式民居对比可视化平台</h1>
+    </div>
+
+    <div class="analysis-page">
+        <div class="menu-column">
+            <button class="main-menu-btn">典型民居图鉴</button>
+            <button class="main-menu-btn active">民居对比分析</button>
+            <div class="sub-menu-container">
+                <button class="sub-menu-item active" data-type="history">历史发展</button>
+                <button class="sub-menu-item" data-type="adaptation">地域适应</button>
+                <button class="sub-menu-item" data-type="wisdom">建筑智慧</button>
+                <button class="sub-menu-item" data-type="culture">文化关联</button>
+                <button class="sub-menu-item" data-type="modern">现代发展</button>
+            </div>
+        </div>
+
+        <div class="right-content">
+            <div class="card chart-card">
+                <div class="chart-title">合院建筑历史演变</div>
+                <!-- 时间轴区域 -->
+                <div class="timeline-wrapper">
+                    <div id="timelineChart"></div>
+                </div>
+                <!-- 详情区域 -->
+                <div class="detail-wrapper">
+                    <div class="detail-text" id="detailText" style="text-align: left;"></div>
+                    <div class="detail-img" id="detailImg"></div>
+                </div>
+            </div>
+            <div class="card chart-card">
+                <div class="chart-title">典型合院建筑平面图概览</div>
+                <div class="category-filter">
+                    <button class="filter-btn active" data-category="all">全部空间</button>
+                    <button class="filter-btn" data-category="public">核心公共空间</button>
+                    <button class="filter-btn" data-category="living">居住私密空间</button>
+                    <button class="filter-btn" data-category="transition">交通过渡空间</button>
+                    <button class="filter-btn" data-category="auxiliary">辅助功能空间</button>
+                    <button class="filter-btn" data-category="production">生产储物空间</button>
+                    <button class="filter-btn" data-category="entrance">入口防卫空间</button>
+                </div>
+            </div>
+            <div class="bottom-charts">
+                <!-- 1. 华南 镬耳屋 平面图 -->
+                <div class="card glass-hover">
+                    <div class="analysis-title-text" style="font-size: 16px; letter-spacing: 1px; margin-bottom: 10px;">华南 镬耳屋</div>
+                    <div class="detail-text">三间两廊</div>
+                    <div class="plan-svg culture-scene-img">
+                        <svg width="100%" height="100%" viewBox="0 0 300 350" xmlns="http://www.w3.org/2000/svg">
+
+                            <rect x="40"  y="50" width="70" height="140" class="house space-living" data-name="东居室" data-desc="日常起居、私密休息，长幼分住的东向居室"></rect>
+                            <rect x="110" y="50" width="80" height="140" class="house space-public" data-name="厅堂" data-desc="家族核心、礼仪接待，镬耳屋的中心公共空间"></rect>
+                            <rect x="190" y="50" width="70" height="140" class="house space-living" data-name="西居室" data-desc="日常起居、私密休息，长幼分住的西向居室"></rect>
+
+                            <rect x="40"  y="190" width="70" height="60" class="sub space-auxiliary space-entrance" data-name="东廊" data-desc="兼具厨房、门房功能，入户过渡的辅助空间。一方面便于空气流通、消暑散热；另一方面靠着廊庑连接了建筑的骨骼，起到隔绝风雨、遮挡阳光的作用。"></rect>
+                            <rect x="190" y="190" width="70" height="60" class="sub space-auxiliary space-entrance" data-name="西廊" data-desc="兼具厨房、门房功能，入户过渡的辅助空间。一方面便于空气流通、消暑散热；另一方面靠着廊庑连接了建筑的骨骼，起到隔绝风雨、遮挡阳光的作用。"></rect>
+                            <rect x="110" y="190" width="80" height="60" class="yard space-transition" data-name="天井" data-desc="窄长型天井，镬耳屋的采光通风核心"></rect>
+
+                            <text x="150" y="120" class="label">厅堂</text>
+                            <text x="75"  y="120" class="label" writing-mode="vertical-rl">居室</text>
+                            <text x="225" y="120" class="label" writing-mode="vertical-rl">居室</text>
+                            <text x="75"  y="225" class="label">东廊</text>
+                            <text x="225" y="225" class="label">西廊</text>
+                            <text x="150" y="225" class="label">天井</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- 2. 西北 地坑院 平面图 -->
+                <div class="card glass-hover">
+                    <div class="analysis-title-text" style="font-size: 16px; letter-spacing: 1px; margin-bottom: 10px;">西北 地坑院</div>
+                    <div class="detail-text">阴阳配合 五行相克  代表：西兑宅</div>
+                    <div class="plan-svg culture-scene-img">
+                        <svg width="100%" height="100%" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+
+                            <rect x="60" y="60" width="280" height="280" rx="4" class="outer" />
+
+                            <!-- 主窑 -->
+                            <rect x="60" y="120" width="70" height="110" class="house space-public" data-name="主窑" data-desc="地势较高的阳位，宜宅主为金命相者。地坑院核心公共空间，家族起居、待客的主要区域"></rect>
+
+                            <!-- 门洞窑 -->
+                            <rect x="280" y="120" width="60" height="60" class="sub space-entrance" data-name="门洞窑" data-desc="地坑院入口，兼具防卫和过渡功能"></rect>
+
+                            <!-- 厨窑 -->
+                            <rect x="130" y="280" width="70" height="60" class="sub space-auxiliary" data-name="厨窑" data-desc="烹饪、餐饮的辅助功能空间"></rect>
+
+                            <!-- 客窑（3个） -->
+                            <rect x="130" y="60" width="70" height="60" class="house space-living" data-name="客窑" data-desc="接待宾客的居住空间"></rect>
+                            <rect x="210" y="60" width="70" height="60" class="house space-living" data-name="客窑" data-desc="接待宾客的居住空间"></rect>
+                            <rect x="210" y="280" width="70" height="60" class="house space-living" data-name="客窑" data-desc="接待宾客的居住空间"></rect>
+
+                            <!-- 五鬼窑 -->
+                            <rect x="280" y="220" width="60" height="60" class="sub space-auxiliary" data-name="五鬼窑" data-desc="五鬼窑（也叫绝命窑）呈凶性，被认为是全窑院最不好的窑洞，常用来圈养牲口、磨面和放农具杂物。因石磨是白虎星，可以镇邪。"></rect>
+
+                            <!-- 茅厕 -->
+                            <rect x="60" y="240" width="70" height="40" class="sub space-auxiliary" data-name="茅厕" data-desc="卫生功能的辅助空间"></rect>
+                            
+                            <text x="95" y="180" class="label" writing-mode="vertical-rl">主窑</text>
+                            <text x="310" y="150" class="label" writing-mode="vertical-rl">门洞窑</text>
+                            <text x="165" y="310" class="label">厨窑</text>
+                            <text x="165" y="90" class="label">客窑</text>
+                            <text x="245" y="90" class="label">客窑</text>
+                            <text x="245" y="310" class="label">客窑</text>
+                            <text x="310" y="255" class="label">五鬼窑</text>
+                            <text x="95" y="265" class="label">茅厕</text>
+
+                            <g transform="translate(350,50)">
+                                <polygon points="0,-15 5,-5 -5,-5" fill="var(--text-main)" />
+                                <line x1="0" y1="-5" x2="0" y2="15" stroke="var(--text-main)" stroke-width="2" />
+                                <text x="0" y="30" class="label">N</text>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- 3. 华北 北京四合院 平面图 -->
+                <div class="card glass-hover">
+                    <div class="analysis-title-text" style="font-size: 16px; letter-spacing: 1px; margin-bottom: 10px;">华北 北京四合院</div>
+                    <div class="detail-text">方形围合 一进院落</div>
+                    <div class="plan-svg culture-scene-img">
+                        <svg width="100%" height="100%" viewBox="0 0 400 450" xmlns="http://www.w3.org/2000/svg">
+
+                            <rect x="60" y="40" width="280" height="370" rx="4" class="outer" />
+                            <!-- 正房 -->
+                            <rect x="115" y="40" width="170" height="90" class="house space-public" data-name="正房" data-desc="四合院核心，长辈居住的公共/私密复合空间"></rect>
+
+                            <!-- 东/西厢房 -->
+                            <rect x="60" y="145" width="70" height="160" class="house space-living" data-name="东厢房" data-desc="晚辈居住的私密空间"></rect>
+                            <rect x="270" y="145" width="70" height="160" class="house space-living" data-name="西厢房" data-desc="晚辈居住的私密空间"></rect>
+
+                            <!-- 倒座房 -->
+                            <rect x="115" y="340" width="170" height="70" class="house space-public" data-name="倒座房" data-desc="门房、杂役居住的公共过渡空间"></rect>
+
+                            <!-- 大门 -->
+                            <rect x="285" y="340" width="55" height="70" class="sub space-entrance" data-name="大门" data-desc="四合院入口，防卫和过渡功能"></rect>
+
+                            <!-- 杂物房 -->
+                            <rect x="60" y="340" width="55" height="70" class="sub space-production" data-name="杂物房" data-desc="存储生活物资的生产储物空间"></rect>
+
+                            <!-- 庭院 -->
+                            <rect x="140" y="145" width="120" height="160" class="yard space-transition" data-name="庭院" data-desc="四合院核心过渡空间，采光通风、日常活动"></rect>
+
+                            <!-- 耳房 -->
+                            <rect x="60" y="40" width="55" height="60" class="house space-auxiliary" data-name="东耳房" data-desc="辅助性居住/储物空间"></rect>
+                            <rect x="285" y="40" width="55" height="60" class="house space-auxiliary" data-name="西耳房" data-desc="辅助性居住/储物空间"></rect>
+
+                            <text x="200" y="90" class="label">正房</text>
+                            <text x="95" y="220" class="label" writing-mode="vertical-rl">东厢房</text>
+                            <text x="305" y="220" class="label" writing-mode="vertical-rl">西厢房</text>
+                            <text x="200" y="375" class="label">倒座房</text>
+                            <text x="315" y="380" class="label">大门</text>
+                            <text x="85" y="380" class="label">杂物</text>
+                            <text x="200" y="215" class="label">庭院</text>
+                            <text x="87" y="70" class="label" writing-mode="vertical-rl">耳房</text>
+                            <text x="312" y="70" class="label" writing-mode="vertical-rl">耳房</text>
+
+                            <g transform="translate(350, 60)">
+                                <polygon points="0,-15 5,-5 -5,-5" fill="var(--text-main)" />
+                                <line x1="0" y1="-5" x2="0" y2="15" stroke="var(--text-main)" stroke-width="2" />
+                                <text x="0" y="25" class="label">N</text>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bottom-charts" style="grid-template-columns: 1fr 1fr;">
+                <!-- 4. 西南 云南一颗印 下层 + 上层 -->
+                <div class="card glass-hover">
+                    <div class="analysis-title-text" style="font-size: 16px; letter-spacing: 1px; margin-bottom: 10px;">西南 云南一颗印</div>
+                    <div class="detail-text">三间四耳倒八尺</div>
+                    <div class="plan-svg culture-scene-img">
+                        <svg width="100%" height="100%" viewBox="0 0 360 360" xmlns="http://www.w3.org/2000/svg">
+
+                            <rect x="20" y="40" width="320" height="320" rx="4" class="outer" />
+
+                            <!-- 客堂：公共 -->
+                            <rect x="120" y="40" width="120" height="130" class="yard space-public" 
+                                data-name="客堂" data-desc="面朝天井，中间为客堂（明间），是家族待客、议事的核心"></rect>
+                            <!-- 卧房：居住 -->
+                            <rect x="20" y="40" width="100" height="130" class="house space-living" 
+                                data-name="卧房" data-desc="家人私密居住空间"></rect>
+                            <rect x="240" y="40" width="100" height="130" class="house space-living" 
+                                data-name="卧房" data-desc="家人私密居住空间"></rect>
+
+                            <!-- 灶房：辅助 -->
+                            <rect x="260" y="190" width="80" height="80" class="sub space-auxiliary" 
+                                data-name="东厢房" data-desc="多为灶房（厨房），紧邻天井便于排烟、取水"></rect>
+                            <!-- 马厩：生产储物 -->
+                            <rect x="20" y="190" width="80" height="80" class="sub space-production" 
+                                data-name="西厢房" data-desc="多为马厩/杂物间，也可作为晚辈卧房。"></rect>
+
+                            <!-- 猪圈：生产 -->
+                            <rect x="20" y="270" width="80" height="90" class="sub space-production" 
+                                data-name="倒座" data-desc="沿天井南侧分布，功能为猪圈/杂物间。南侧正中为大门，是唯一对外出入口。"></rect>
+                            <!-- 杂物：生产 -->
+                            <rect x="260" y="270" width="80" height="90" class="sub space-production" 
+                                data-name="倒座" data-desc="沿天井南侧分布，功能为猪圈/杂物间。南侧正中为大门，是唯一对外出入口。"></rect>
+
+                            <!-- 大门：入口 -->
+                            <rect x="150" y="340" width="60" height="30" class="sub space-entrance" 
+                                data-name="大门" data-desc="住宅入口，防卫过渡"></rect>
+
+                            <!-- 天井：过渡 -->
+                            <rect x="120" y="210" width="120" height="90" class="yard space-transition" 
+                                data-name="天井" data-desc="采光、通风、排水核心过渡空间"></rect>
+
+                            <text x="180" y="105" class="label">客堂</text>
+                            <text x="70" y="105" class="label" writing-mode="vertical-rl">卧房</text>
+                            <text x="290" y="105" class="label" writing-mode="vertical-rl">卧房</text>
+                            <text x="300" y="230" class="label" writing-mode="vertical-rl">东厢房</text>
+                            <text x="60" y="230" class="label" writing-mode="vertical-rl">西厢房</text>
+                            <text x="60" y="315" class="label" writing-mode="vertical-rl">倒座</text>
+                            <text x="300" y="315" class="label" writing-mode="vertical-rl">倒座</text>
+                            <text x="180" y="360" class="label">大门</text>
+                            <text x="180" y="260" class="label">天井</text>
+                            <text x="180" y="323" class="label">倒八尺</text>
+                        </svg>
+
+                        <!-- 上层 -->
+                        <svg width="100%" height="100%" viewBox="0 0 360 360" xmlns="http://www.w3.org/2000/svg">
+                       
+                            <rect x="20" y="40" width="320" height="320" rx="4" class="outer" />
+
+                            <!-- 祖堂：公共 -->
+                            <rect x="120" y="40" width="120" height="130" class="yard space-public" 
+                                data-name="祖堂" data-desc="祭祀、家族礼仪核心公共空间"></rect>
+                            <!-- 卧房：居住 -->
+                            <rect x="20" y="40" width="100" height="130" class="house space-living" 
+                                data-name="卧房" data-desc="长辈、主人居住"></rect>
+                            <rect x="240" y="40" width="100" height="130" class="house space-living" 
+                                data-name="卧房" data-desc="长辈、主人居住"></rect>
+
+                            <!-- 耳房：辅助 -->
+                            <rect x="260" y="190" width="80" height="80" class="sub space-auxiliary" 
+                                data-name="右耳房" data-desc="辅助居住、储物"></rect>
+                            <rect x="260" y="270" width="80" height="90" class="sub space-auxiliary" 
+                                data-name="右耳房" data-desc="辅助居住、储物"></rect>
+                            <rect x="20" y="190" width="80" height="80" class="sub space-auxiliary" 
+                                data-name="左耳房" data-desc="辅助居住、储物"></rect>
+                            <rect x="20" y="270" width="80" height="90" class="sub space-auxiliary" 
+                                data-name="左耳房" data-desc="辅助居住、储物"></rect>
+
+                            <!-- 天井：过渡 -->
+                            <rect x="120" y="210" width="120" height="90" class="yard space-transition" 
+                                data-name="天井" data-desc="上层采光、通风过渡空间"></rect>
+                            <rect x="100" y="300" width="160" height="60" class="yard space-transition" 
+                                data-name="倒八尺" data-desc="连接内外的过渡通道"></rect>
+
+                            <text x="180" y="105" class="label">祖堂</text>
+                            <text x="70" y="105" class="label" writing-mode="vertical-rl">卧房</text>
+                            <text x="290" y="105" class="label" writing-mode="vertical-rl">卧房</text>
+                            <text x="300" y="230" class="label" writing-mode="vertical-rl">右耳房</text>
+                            <text x="300" y="315" class="label" writing-mode="vertical-rl">右耳房</text>
+                            <text x="60" y="230" class="label" writing-mode="vertical-rl">左耳房</text>
+                            <text x="60" y="315" class="label" writing-mode="vertical-rl">左耳房</text>
+                            <text x="180" y="260" class="label">天井</text>
+                            <text x="180" y="335" class="label">倒八尺</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- 5. 华东 徽派民居 一层 + 二层 -->
+                <div class="card chart-card">
+                    <div class="analysis-title-text" style="font-size: 16px; letter-spacing: 1px; margin-bottom: 10px;">华东 徽派民居</div>
+                    <div class="detail-text">四水归堂内向合院</div>
+                    <div class="plan-svg culture-scene-img">
+                    <!-- 一层 -->
+                    <svg width="100%" height="100%" viewBox="0 0 360 420" xmlns="http://www.w3.org/2000/svg">
+                        
+                        <rect x="30" y="40" width="300" height="360" rx="2" class="outer" />
+
+                        <!-- 天井：过渡 -->
+                        <rect x="130" y="230" width="100" height="100" class="yard space-transition" 
+                            data-name="天井" data-desc="徽派中心天井，采光通风、聚气排水"></rect>
+                        <!-- 大门：入口 -->
+                        <rect x="150" y="385" width="60" height="30" class="house space-entrance" 
+                            data-name="大门" data-desc="宅院入口，礼仪与防卫"></rect>
+                        <!-- 厅堂：公共 -->
+                        <rect x="130" y="40" width="100" height="140" class="yard space-public" 
+                            data-name="厅堂" data-desc="轴线核心，家族礼仪、待客、议事核心"></rect>
+
+                        <!-- 卧室：居住 -->
+                        <rect x="30" y="40" width="100" height="140" class="house space-living" 
+                            data-name="卧室" data-desc="家人私密居住空间"></rect>
+                        <rect x="230" y="40" width="100" height="140" class="house space-living" 
+                            data-name="卧室" data-desc="家人私密居住空间"></rect>
+
+                        <!-- 庭院：过渡 -->
+                        <rect x="30" y="210" width="80" height="80" class="sub space-transition" 
+                            data-name="庭院" data-desc="小型休闲、绿化过渡空间"></rect>
+                        <!-- 猪房：生产 -->
+                        <rect x="250" y="290" width="80" height="110" class="sub space-production" 
+                            data-name="猪房" data-desc="养殖、农副生产空间"></rect>
+                        <!-- 厨房：辅助 -->
+                        <rect x="30" y="290" width="80" height="110" class="sub space-auxiliary" 
+                            data-name="厨房" data-desc="做饭、备餐辅助空间"></rect>
+                        <rect x="250" y="210" width="80" height="80" class="sub space-auxiliary" 
+                            data-name="厨房" data-desc="做饭、备餐辅助空间"></rect>
+
+                        <text x="180" y="285" class="label">天井</text>
+                        <text x="180" y="405" class="label">大门</text>
+                        <text x="180" y="110" class="label">厅堂</text>
+                        <text x="80" y="110" class="label" writing-mode="vertical-rl">卧室</text>
+                        <text x="280" y="110" class="label" writing-mode="vertical-rl">卧室</text>
+                        <text x="70" y="250" class="label">庭院</text>
+                        <text x="290" y="345" class="label">猪房</text>
+                        <text x="70" y="345" class="label">厨房</text>
+                        <text x="290" y="250" class="label">厨房</text>
+                    </svg>
+
+                    <!-- 二层 -->
+                    <svg width="100%" height="100%" viewBox="0 0 360 420" xmlns="http://www.w3.org/2000/svg">
+                        
+                        <rect x="30" y="40" width="300" height="360" rx="2" class="outer" />
+
+                        <!-- 天井：过渡 -->
+                        <rect x="130" y="230" width="100" height="100" class="yard space-transition" 
+                            data-name="天井" data-desc="二楼采光、通风、观景过渡空间"></rect>
+                        <!-- 储藏：生产 -->
+                        <rect x="110" y="330" width="140" height="70" class="house space-production" 
+                            data-name="储藏室" data-desc="存放粮食、衣物、杂物"></rect>
+                        <!-- 祖堂：公共 -->
+                        <rect x="130" y="40" width="100" height="140" class="yard space-public" 
+                            data-name="祖堂" data-desc="祭祀祖先、家族礼仪核心"></rect>
+
+                        <!-- 卧室：居住 -->
+                        <rect x="30" y="40" width="100" height="80" class="house space-living" 
+                            data-name="卧室" data-desc="二楼私密居住空间"></rect>
+                        <rect x="230" y="40" width="100" height="80" class="house space-living" 
+                            data-name="卧室" data-desc="二楼私密居住空间"></rect>
+
+                        <!-- 辅助/储藏：生产+辅助 -->
+                        <rect x="30" y="210" width="80" height="80" class="sub space-auxiliary space-production" 
+                            data-name="储藏间" data-desc="杂物、工具储藏"></rect>
+                        <rect x="30" y="290" width="80" height="110" class="sub space-auxiliary space-production" 
+                            data-name="储藏间" data-desc="杂物、工具储藏"></rect>
+                        <rect x="250" y="290" width="80" height="110" class="sub space-auxiliary space-production" 
+                            data-name="储藏间" data-desc="杂物、物资储藏"></rect>
+                        <rect x="250" y="210" width="80" height="80" class="sub space-auxiliary space-production" 
+                            data-name="储藏间" data-desc="杂物、物资储藏"></rect>
+
+                        <text x="180" y="285" class="label">天井</text>
+                        <text x="180" y="365" class="label">储藏</text>
+                        <text x="180" y="110" class="label">祖堂</text>
+                        <text x="80" y="80" class="label" writing-mode="vertical-rl">卧室</text>
+                        <text x="280" y="80" class="label" writing-mode="vertical-rl">卧室</text>
+                    </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="space-tooltip" id="spaceTooltip"></div>
+    <script src="assets/js/sub1.js"></script>
+</body>
+</html>

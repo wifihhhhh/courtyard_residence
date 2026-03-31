@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/map/js/china.js"></script>
+    <title>合院九州 · 文化关联分析</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 引入书法字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* 右侧内容布局调整 - 核心修改：改为1列布局 */
+        .right-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* 左侧旭日图，右侧竖列 */
+            gap: 24px;
+            height: 100%;
+        }
+        
+        /* 左侧：建筑布局与家族规模（旭日图）- 保持上下撑满 */
+        .left-chart {
+            height: 100%;
+        }
+        
+        /* 右侧：竖列容器 - 包含柱状图和轮播图 */
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            height: 100%;
+        }
+        
+        /* 调整图表容器高度，确保上下分布合理 */
+        .chart-card {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* 图表容器样式 */
+        #familySizeChart {
+            width: 100%;
+            margin-top: 70px;
+            flex: 1;
+            min-height: 200px;
+            position: relative;
+            z-index: 5;
+            height: 100%; /* 确保旭日图撑满容器 */
+        }
+        
+        #functionalAreaChart {
+            width: 100%;
+            margin-top: 70px;
+            flex: 1;
+            min-height: 200px;
+            position: relative;
+            z-index: 5;
+        }
+        
+        #culturalSymbolsChart {
+            width: 100%;
+            margin-top: 70px;
+            flex: 1;
+            min-height: 200px;
+            position: relative;
+            z-index: 5;
+        }
+        
+        /* 调整柱状图X轴字体大小 - 核心修改 */
+        /* 给柱状图容器添加特殊类，方便JS中调整样式 */
+        .bar-chart-container {
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* 横向轮播图样式 */
+        .carousel-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .carousel-track {
+            display: flex;
+            height: 100%;
+            transition: transform 0.5s linear; /* 匀速滚动 */
+        }
+
+        .carousel-slide {
+            flex: 0 0 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* 多图布局+间距 */
+        .image-group {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .image-item {
+            position: relative;
+            width: 30%; /* 每张图占30%宽度，留出间距 */
+            height: 75%; /* 适配容器 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: default;
+        }
+
+        .carousel-image {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 4px;
+            box-shadow: 0 5px 12px rgba(0,0,0,0.1);
+            border: 1px solid #f0e6d2;
+        }
+
+        /* 跟随光标弹窗样式 */
+        .carousel-tooltip {
+            position: fixed; /* 固定定位跟随光标 */
+            padding: 12px;
+            border-radius: 4px;
+            background: rgba(247, 239, 233, 0.95);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            text-align: center;
+            border: 1px solid #d2b48c;
+            animation: fadeIn 0.5s ease-in-out;
+            max-width: 180px;
+            font-size: 12px;
+            color: #5d4037;
+            z-index: 100;
+            pointer-events: none; /* 避免遮挡鼠标事件 */
+        }
+
+        /* 轮播控制按钮 */
+        .carousel-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 36px;
+            height: 36px;
+            border: 1px solid #d2b48c;
+            border-radius: 50%;
+            background: none;
+            color: #705935;
+            font-size: 16px;
+            cursor: pointer;
+            z-index: 20;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .carousel-btn:hover {
+            background: #dfdad4;
+            color: #5d4037;
+            border-color: #6e513c;
+        }
+
+        .carousel-btn.prev {
+            left: 40px;
+        }
+
+        .carousel-btn.next {
+            right: 40px;
+        }
+
+        .custom-tooltip {
+            padding: 15px;
+            border-radius: 4px;
+            background: rgba(247, 239, 233, 0.95);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            text-align: center;
+            border: 1px solid #d2b48c;
+            animation: fadeIn 0.5s ease-in-out;
+            max-width: 180px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 992px) {
+            /* 移动端恢复单列布局 */
+            .right-content {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr 1fr 1fr;
+            }
+            
+            .carousel-btn.prev {
+                left: 20px;
+            }
+            .carousel-btn.next {
+                right: 20px;
+            }
+            .image-item {
+                width: 45%;
+                height: 60%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-container"></div>
+    <div class="header">
+        <h1>合院九州·典型合院式民居对比可视化平台</h1>
+    </div>
+
+    <div class="analysis-page" id="analysisPage">
+        <!-- 左侧菜单 -->
+        <div class="menu-column">
+            <button class="main-menu-btn" id="menu1">典型民居图鉴</button>
+            <button class="main-menu-btn active" id="menu2">民居对比分析</button>
+            
+            <div class="sub-menu-container" id="subMenu">
+                <button class="sub-menu-item" data-type="history">历史发展</button>
+                <button class="sub-menu-item" data-type="adaptation">地域适应</button>
+                <button class="sub-menu-item" data-type="wisdom">建筑智慧</button>
+                <button class="sub-menu-item active" data-type="culture">文化关联</button>
+                <button class="sub-menu-item" data-type="modern">现代发展</button>
+            </div>
+        </div>
+
+        <!-- 右侧图表区域 - 核心布局修改 -->
+        <div class="right-content">
+            <!-- 左侧：建筑布局与家族规模（旭日图）- 保持上下撑满 -->
+            <div class="left-chart">
+                <div class="card chart-card">
+                    <div class="chart-title">建筑布局与家族规模</div>
+                    <div id="familySizeChart"></div>
+                </div>
+            </div>
+            
+            <!-- 右侧：竖列容器 - 包含柱状图和轮播图 -->
+            <div class="right-column">
+                <!-- 功能分区的等级差异（柱状图） -->
+                <div class="card chart-card bar-chart-container">
+                    <div class="chart-title">功能分区的等级差异</div>
+                    <div id="functionalAreaChart"></div>
+                </div>
+                
+                <!-- 文化符号轮播图 -->
+                <div class="card chart-card">
+                    <div class="chart-title">装饰元素的文化符号</div>
+                    <div id="culturalSymbolsChart" class="carousel-container">
+                        <div class="carousel-track" id="carouselTrack">
+                            <!-- 轮播图幻灯片 -->
+                            <div class="carousel-slide">
+                                <div class="image-group">
+                                    <div class="image-item" data-tooltip="华北四合院 · 回纹影壁（吉祥循环）">
+                                        <img src="assets/data/images/纹样/纹样-1回纹影壁.jpg" alt="华北四合院·回纹影壁" class="carousel-image">
+                                    </div>
+                                    <div class="image-item" data-tooltip="华北四合院 · 莲纹门簪（清廉圣洁）">
+                                        <img src="assets/data/images/纹样/纹样-1莲纹门簪.jpg" alt="华北四合院·莲纹门簪" class="carousel-image">
+                                    </div>
+                                    <div class="image-item" data-tooltip="华北四合院 · 荷叶纹雀替（高洁清雅）">
+                                        <img src="assets/data/images/纹样/纹样-1蓝绿荷叶纹雀替.jpg" alt="华北四合院·荷叶纹雀替" class="carousel-image">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="carousel-slide">
+                                <div class="image-group">
+                                    <div class="image-item" data-tooltip="徽派民居 · 山水纹砖雕（文人意境）">
+                                        <img src="assets/data/images/纹样/纹样-2山水纹砖雕.jpg" alt="徽派民居·山水纹砖雕" class="carousel-image">
+                                    </div>
+                                    <div class="image-item" data-tooltip="徽派民居 · 人物故事木雕（宗法伦理）">
+                                        <img src="assets/data/images/纹样/纹样-2人物故事木雕.jpg" alt="徽派民居·人物故事木雕" class="carousel-image">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="carousel-slide">
+                                <div class="image-group">
+                                    <div class="image-item" data-tooltip="广府镬耳屋 · 镬耳山墙（仕途显赫）">
+                                        <img src="assets/data/images/纹样/纹样-3镬耳山墙.jpg" alt="广府镬耳屋·镬耳山墙" class="carousel-image">
+                                    </div>
+                                    <div class="image-item" data-tooltip="广府镬耳屋 · 卷草纹（上善若水）">
+                                        <img src="assets/data/images/纹样/纹样-3卷草纹.jpg" alt="广府镬耳屋·卷草纹" class="carousel-image">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="carousel-slide">
+                                <div class="image-group">
+                                    <div class="image-item" data-tooltip="一颗印 · 麒麟送书（科举登科）">
+                                        <img src="assets/data/images/纹样/纹样-4麒麟送书.jpg" alt="一颗印·麒麟送书" class="carousel-image">
+                                    </div>
+                                    <div class="image-item" data-tooltip="一颗印 · 灯笼格窗棂（诗意生活）">
+                                        <img src="assets/data/images/纹样/纹样-4灯笼格窗棂.png" alt="一颗印·灯笼格窗棂" class="carousel-image">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="carousel-slide">
+                                <div class="image-group">
+                                    <div class="image-item" data-tooltip="西北窑洞 · 几何窗花（简约实用）">
+                                        <img src="assets/data/images/纹样/纹样-5几何窗花.jpg" alt="西北窑洞·几何窗花" class="carousel-image">
+                                    </div>
+                                    <div class="image-item" data-tooltip="西北窑洞 · 植物纹壁绘（农耕生机）">
+                                        <img src="assets/data/images/纹样/纹样-5植物纹壁绘.jpg" alt="西北窑洞·植物纹壁绘" class="carousel-image">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 轮播控制按钮 -->
+                        <button class="carousel-btn prev" id="prevBtn">&lt;</button>
+                        <button class="carousel-btn next" id="nextBtn">&gt;</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 跟随光标弹窗 -->
+    <div class="carousel-tooltip" id="followTooltip"></div>
+
+    <script>
+        // 页面加载完成后调整柱状图X轴字体大小
+        document.addEventListener('DOMContentLoaded', function() {
+            // 等待ECharts初始化完成
+            setTimeout(function() {
+                // 获取柱状图实例并调整X轴字体大小
+                const functionalAreaChart = echarts.getInstanceByDom(document.getElementById('functionalAreaChart'));
+                if (functionalAreaChart) {
+                    const option = functionalAreaChart.getOption();
+                    // 调整X轴字体大小（设置为16px，可根据需要修改）
+                    if (option.xAxis && option.xAxis[0]) {
+                        option.xAxis[0].axisLabel = option.xAxis[0].axisLabel || {};
+                        option.xAxis[0].axisLabel.fontSize = 16; // 调大字体大小
+                        functionalAreaChart.setOption(option);
+                    }
+                }
+            }, 500);
+        });
+    </script>
+    <script src="assets/js/sub4.js"></script>
+</body>
+</html>

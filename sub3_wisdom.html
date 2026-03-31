@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/map/js/china.js"></script>
+    <title>合院九州 · 建筑营造智慧</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .right-content {
+            display: grid;
+            grid-template-rows: 1fr 1fr;
+            gap: 24px;
+            height: 100%;
+        }
+        
+        /* 第一行：2个卡片（和弦图 + 树图/旭日图） */
+        .top-charts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            height: 100%;
+        }
+        
+        /* 第二行：2个卡片（平行坐标+散点矩阵 + 桑基图） */
+        .bottom-charts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            height: 100%;
+        }
+        
+        /* 图表容器样式 */
+        #chordChart, #treemapSunburstChart, #parallelScatter, #sankeyChart {
+            width: 100%;
+            flex: 1;
+            min-height: 200px;
+            margin-top: 40px;
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 1200px) {
+            .right-content {
+                grid-template-rows: auto auto;
+            }
+            .top-charts, .bottom-charts {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .bottom-charts {
+            grid-template-columns: 1fr;
+        }
+            .chart-card {
+                min-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-container"></div>
+
+    <div class="header">
+        <h1>合院九州·典型合院式民居对比可视化平台</h1>
+    </div>
+
+    <div class="analysis-page" id="analysisPage">
+        <!-- 左侧菜单 -->
+        <div class="menu-column">
+            <button class="main-menu-btn" id="menu1">典型民居图鉴</button>
+            <button class="main-menu-btn active" id="menu2">民居对比分析</button>
+            
+            <div class="sub-menu-container" id="subMenu">
+                <button class="sub-menu-item" data-type="history">历史发展</button>
+                <button class="sub-menu-item" data-type="adaptation">地域适应</button>
+                <button class="sub-menu-item active" data-type="wisdom">建筑智慧</button>
+                <button class="sub-menu-item" data-type="culture">文化关联</button>
+                <button class="sub-menu-item" data-type="modern">现代发展</button>
+            </div>
+        </div>
+
+        <!-- 右侧图表区域 -->
+        <div class="right-content">
+            <!-- 第一行：和弦图 + 树图/旭日图 -->
+            <div class="top-charts">
+                <div class="card chart-card">
+                    <div class="chart-title">结构-材料-性能关联图</div>
+                    <div id="chordChart"></div>
+                </div>
+                <div class="card chart-card">
+                    <div class="chart-title">民居营造效率分析图</div>
+                    <div id="treemapSunburstChart"></div>
+                </div>
+            </div>
+            
+            <!-- 第二行：平行坐标+散点矩阵 + 桑基图 -->
+            <div class="bottom-charts">
+                <div class="card chart-card">
+                    <div class="chart-title">结构力学多维分析</div>
+                    <div id="parallelScatter"></div>
+                </div>
+                <div class="card chart-card">
+                    <div class="chart-title">建筑→材料 流向</div>
+                    <div id="sankeyChart"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/sub3.js"></script>
+</body>
+</html>

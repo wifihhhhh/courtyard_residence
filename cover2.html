@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>合院九州·典型合院式民居对比可视化平台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-paper: #F0EAD6;
+            --bg-gray: #E8E4D6;
+            --text-main: #5D4037;
+            --text-sub: #8B7D6B;
+            --accent-gold: #a59770;
+            --accent-red: #916767;
+            --glass-bg: rgba(255, 255, 255, 0.12);
+            --glass-bg-hover: rgba(255, 255, 255, 0.18);
+            --glass-border: 1px solid rgba(240, 234, 214, 0.35);
+            --glass-blur: 12px;
+            --glass-shadow: 0 4px 24px rgba(93, 64, 55, 0.06);
+            --glass-shadow-hover: 0 8px 32px rgba(93, 64, 55, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif;
+        }
+
+        body {
+            background-color: transparent;
+            overflow: hidden;
+            height: 100vh;
+            color: var(--text-main);
+            position: relative;
+        }
+
+        .background-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: url('assets/古风纹理银色.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            /* filter: brightness(1) contrast(1.02) saturate(0.95); */
+            z-index: -2;
+        }
+
+        .background-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: 
+                radial-gradient(circle at 15% 25%, rgba(165, 151, 112, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 85% 75%, rgba(145, 103, 103, 0.06) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(240, 234, 214, 0.04) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .page-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .page {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .page-1 {
+            left: 0;
+        }
+
+        .page-2 {
+            left: 100%;
+        }
+
+        .page-container.show-page-2 .page-1 {
+            transform: translateX(-100%);
+        }
+
+        .page-container.show-page-2 .page-2 {
+            transform: translateX(-100%);
+        }
+
+        .main-title {
+            font-size: 120px;
+            font-weight: 400;
+            color: var(--text-main);
+            letter-spacing: 10px;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 20px rgba(165, 151, 112, 0.15);
+            position: relative;
+            animation: titleGlow 4s ease-in-out infinite alternate;
+            text-align: center;
+            line-height: 1.2;
+            font-family: "Ma Shan Zheng", "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif;
+        }
+
+        @keyframes titleGlow {
+            0% { text-shadow: 0 2px 20px rgba(165, 151, 112, 0.15); }
+            100% { text-shadow: 0 4px 30px rgba(165, 151, 112, 0.25); }
+        }
+
+        .main-title::before,
+        .main-title::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 60px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+        }
+
+        .main-title::before {
+            left: -80px;
+        }
+
+        .main-title::after {
+            right: -80px;
+        }
+
+        .subtitle {
+            font-size: 40px;
+            color: var(--text-sub);
+            letter-spacing: 10px;
+            margin-bottom: 12px;
+            font-weight: 400;
+            opacity: 0.9;
+            text-align: center;
+            font-family: "Ma Shan Zheng", "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif;
+        }
+
+        .track-info {
+            font-size: 24px;
+            color: var(--accent-gold);
+            letter-spacing: 6px;
+            margin-bottom: 45px;
+            font-weight: 400;
+            font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif;
+        }
+
+        .info-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            border-radius: 16px;
+            padding: 24px 40px;
+            margin-bottom: 16px;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .info-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(165, 151, 112, 0.08), transparent);
+            transition: left 0.8s ease;
+        }
+
+        .info-card:hover::before {
+            left: 100%;
+        }
+
+        .info-card:hover {
+            background: var(--glass-bg-hover);
+            transform: translateY(-4px);
+            box-shadow: var(--glass-shadow-hover);
+            border-color: rgba(165, 151, 112, 0.3);
+        }
+
+        .info-value {
+            font-size: 22px;
+            color: var(--text-main);
+            font-weight: 500;
+            letter-spacing: 1px;
+            font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif;
+        }
+
+        .nav-btn {
+            position: absolute;
+            bottom: 45px;
+            width: 52px;
+            height: 52px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: var(--glass-border);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--glass-shadow);
+            z-index: 10;
+        }
+
+        .nav-btn:hover {
+            background: rgba(165, 151, 112, 0.15);
+            transform: scale(1.1);
+            border-color: var(--accent-gold);
+        }
+
+        .nav-btn::after {
+            content: '';
+            width: 12px;
+            height: 12px;
+            border-right: 2px solid var(--text-main);
+            border-bottom: 2px solid var(--text-main);
+            transform: rotate(-45deg);
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover::after {
+            border-color: var(--accent-gold);
+        }
+
+        .nav-btn.prev {
+            left: 45px;
+        }
+
+        .nav-btn.prev::after {
+            transform: rotate(135deg);
+            margin-left: 4px;
+        }
+
+        .nav-btn.next {
+            right: 45px;
+        }
+
+        .nav-btn.next::after {
+            margin-right: 4px;
+        }
+
+        .intro-title {
+            font-size: 52px;
+            font-weight: 400;
+            color: var(--text-main);
+            letter-spacing: 12px;
+            margin-bottom: 40px;
+            text-align: center;
+            position: relative;
+            font-family: "Ma Shan Zheng", "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif;
+        }
+
+        .intro-title::after {
+            content: '';
+            position: absolute;
+            bottom: -16px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+        }
+
+        .intro-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 15px;
+            max-width: 1200px;
+            width: 100%;
+            margin-bottom: 35px;
+        }
+
+        .intro-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            border-radius: 16px;
+            padding: 28px 40px;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .intro-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .intro-card:hover::before {
+            opacity: 1;
+        }
+
+        .intro-card:hover {
+            background: var(--glass-bg-hover);
+            transform: translateY(-5px);
+            box-shadow: var(--glass-shadow-hover);
+            border-color: rgba(165, 151, 112, 0.3);
+        }
+
+        .intro-card-title {
+            font-size: 20px;
+            /* font-weight: 500; */
+            color: var(--accent-gold);
+            margin-bottom: 4px;
+            letter-spacing: 2px;
+            font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif;
+        }
+
+        .intro-card-content {
+            font-size: 18px;
+            color: var(--text-sub);
+            line-height: 2.2;
+            letter-spacing: 1px;
+            font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif;
+        }
+
+        .enter-btn {
+            background: linear-gradient(135deg, var(--accent-gold) 0%, rgba(165, 151, 112, 0.85) 100%);
+            color: var(--bg-paper);
+            border: none;
+            padding: 10px 60px;
+            font-size: 20px;
+            font-weight: 500;
+            letter-spacing: 6px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            text-decoration: none;
+            box-shadow: 0 4px 20px rgba(165, 151, 112, 0.25);
+            position: relative;
+            overflow: hidden;
+            font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif;
+        }
+
+        .enter-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+            transition: left 0.8s ease;
+        }
+
+        .enter-btn:hover::before {
+            left: 100%;
+        }
+
+        .enter-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(165, 151, 112, 0.35);
+        }
+
+        .enter-btn:active {
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 60px;
+                letter-spacing: 16px;
+            }
+
+            .main-title::before,
+            .main-title::after {
+                width: 30px;
+            }
+
+            .main-title::before {
+                left: -40px;
+            }
+
+            .main-title::after {
+                right: -40px;
+            }
+
+            .subtitle {
+                font-size: 24px;
+                letter-spacing: 8px;
+            }
+
+            .track-info {
+                font-size: 18px;
+                letter-spacing: 4px;
+            }
+
+            .info-value {
+                font-size: 18px;
+            }
+
+            .intro-title {
+                font-size: 36px;
+                letter-spacing: 8px;
+            }
+
+            .intro-card-title {
+                font-size: 18px;
+            }
+
+            .intro-card-content {
+                font-size: 14px;
+            }
+
+            .intro-grid {
+                grid-template-columns: 1fr;
+                gap: 14px;
+                max-height: 55vh;
+                overflow-y: auto;
+                padding-right: 10px;
+            }
+
+            .enter-btn {
+                font-size: 18px;
+                padding: 16px 48px;
+            }
+
+            .nav-btn {
+                bottom: 35px;
+                width: 44px;
+                height: 44px;
+            }
+
+            .nav-btn.prev {
+                left: 25px;
+            }
+
+            .nav-btn.next {
+                right: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-container"></div>
+    <div class="background-overlay"></div>
+    
+    <div class="page-container" id="pageContainer">
+        <div class="page page-1">
+            <h1 class="main-title">合院九州</h1>
+            <p class="subtitle">典型合院式民居对比可视化平台</p><br>
+            <p class="track-info">信息可视化设计</p>
+            
+            <div class="info-card">
+                <div class="info-value">王亦菲 | 指导老师：顾振宇 戴永辉 | 上海对外经贸大学</div>
+            </div>
+            
+            <button class="nav-btn next" onclick="goToPage(2)"></button>
+        </div>
+        
+        <div class="page page-2">
+            <h2 class="intro-title">项目概览</h2>
+            
+            <div class="intro-grid">
+                <div class="intro-card">
+                    <div class="intro-card-title">项目背景</div>
+                    <div class="intro-card-content">
+                        合院式民居是中国传统居住文化的重要代表，承载着地域特色、营造智慧与人文精神。随着数字化时代的到来，将这些珍贵的建筑文化以更直观、更生动的方式呈现出来，以整体的方法进行总结，变得尤为重要。
+                    </div>
+                </div>
+                
+                <div class="intro-card">
+                    <div class="intro-card-title">功能介绍</div>
+                    <div class="intro-card-content">
+                        平台围绕合院民居打造展示分析体系：按时间梳理历史发展与平面布局演变，从气候、地理等角度分析地域适应性，解读空间构造的建筑智慧，挖掘其所承载的文化内涵，并关注它在现代社会的传承与更新。同时提供典型民居图鉴，方便用户集中查阅、直观对比。
+                    </div>
+                </div>
+                
+                <div class="intro-card">
+                    <div class="intro-card-title">项目展望</div>
+                    <div class="intro-card-content">
+                        未来，平台可继续扩充更多地区案例，丰富数据维度与交互形式，让传统民居的研究与展示更加全面。我们希望通过数字化手段，让更多人看见合院之美、理解建筑文化的价值，助力传统文化在新时代得到更好的保护、传播与延续。
+                    </div>
+                </div>
+            </div>
+            
+            <a href="sub1_history.html" class="enter-btn">开始探索</a>
+            
+            <button class="nav-btn prev" onclick="goToPage(1)"></button>
+        </div>
+    </div>
+    
+    <script>
+        function goToPage(pageNum) {
+            const container = document.getElementById('pageContainer');
+            if (pageNum === 2) {
+                container.classList.add('show-page-2');
+            } else {
+                container.classList.remove('show-page-2');
+            }
+        }
+        
+        document.addEventListener('keydown', (e) => {
+            const container = document.getElementById('pageContainer');
+            const isPage2 = container.classList.contains('show-page-2');
+            
+            if (e.key === 'ArrowRight' && !isPage2) {
+                goToPage(2);
+            } else if (e.key === 'ArrowLeft' && isPage2) {
+                goToPage(1);
+            }
+        });
+    </script>
+</body>
+</html>

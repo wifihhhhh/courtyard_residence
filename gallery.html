@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>合院九州·典型合院式民居对比可视化平台</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/map/js/china.js"></script>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <!-- 引入线性图标库 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lucide@0.292.0/dist/lucide.min.css">
+</head>
+<body>
+    <!-- 背景容器 -->
+    <div class="background-container"></div>
+    
+    <div class="header">
+        <h1>合院九州·典型合院式民居对比可视化平台</h1>
+    </div>
+
+    <div class="analysis-page" id="analysisPage">
+        <div class="menu-column">
+            <button class="main-menu-btn active" id="menu1">
+                <i class="lucide icon-home"></i> 典型民居图鉴
+            </button>
+            <button class="main-menu-btn" id="menu2">
+                <i class="lucide icon-compare"></i> 民居对比分析
+            </button>
+            
+            <div class="sub-menu-container" id="subMenu">
+                <!-- 子菜单由 JS 动态生成 -->
+            </div>
+        </div>
+
+        <div class="right-content">
+            <div class="top-cards">
+                <div class="analysis-title">
+                    <div class="analysis-title-text" id="region-build-title">北京市 · 四合院</div>
+                </div>
+                <div class="top-cards-content">
+                    <div class="card img-switch-card">
+                        <div class="chart-title">民居全景图</div>
+                        <div class="img-display" id="imgDisplay"></div>
+                    </div>
+
+                    <div class="card info-card" id="infoCard">
+                        <div class="basic-info" id="basicInfo"></div>
+                        
+                        <div class="chart-title" style="top: 10px; left: 20px; transform: none; display: none;" id="cultureSceneTitle">文化生活场景</div>
+                            
+                            <div class="switch-btns">
+                                <button class="switch-btn active" data-info-type="basic">基本信息</button>
+                                <button class="switch-btn" data-info-type="culture">文化生活场景</button>
+                            </div>
+                            <div class="culture-scene" id="cultureScene" style="display: none;">
+                            <div class="culture-scene-img">
+                                <img id="cultureSceneImgTag" src="" alt="文化场景">
+                            </div>
+                            <p class="desc-text" id="cultureDesc"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bottom-charts">
+                <div class="card chart-card">
+                    <div class="chart-title">地域影响因子</div>
+                    <div id="radarChart"></div>
+                </div>
+                <div class="card chart-card">
+                    <div class="chart-title" id="wordcloudTitle">文化关键词</div>
+                    <div class="wordcloud-wrapper">
+                        <img class="wordcloud-img" id="wordcloudImg" src="" alt="词云图">
+                    </div>
+                </div>
+                <div class="card chart-card">
+                    <div class="chart-title">用材占比</div>
+                    <div id="pieChart"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/data/galleryData.js"></script>
+    <script src="assets/js/gallery.js"></script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <title>合院九州 · 现代发展</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .right-content {
+            grid-template-rows: auto 1fr;
+            gap: 24px;
+            height: 100%;
+        }
+        /* 顶部两张图 */
+        .top-charts {
+            display:grid; 
+            grid-template-columns:1fr 1fr; 
+            gap:24px; 
+            height:360px;
+            margin-bottom: 24px;
+        }
+        .bottom-charts-row1 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            min-height: 220px;
+        }
+        .bottom-charts-row2 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            min-height: 220px;
+            margin-top: 16px;
+        }
+        /* 图表封面图 —— 点击渐隐效果 + 白色半透明遮罩（不刺眼） */
+        .chart-cover {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            z-index: 10;
+            cursor: pointer;
+            transition: opacity 0.8s ease;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .chart-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* opacity: 0.7; */
+        }
+        /* 白色遮罩层，让整体更柔和 */
+        .chart-cover::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            /* background: rgba(255, 255, 255, 0.35); */
+            z-index: 1;
+            pointer-events: none;
+        }
+        .chart-cover.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+        @media (max-width: 1400px) {
+            .bottom-charts-row1 { grid-template-columns: 1fr; }
+            .bottom-charts-row2 { grid-template-columns: repeat(2, 1fr); }
+            .bottom-charts-row2 .chart-card:nth-child(3) { grid-column: span 2; width:80%; margin:0 auto; }
+        }
+        @media (max-width: 992px) {
+            .bottom-charts-row2 { grid-template-columns: 1fr; }
+            .bottom-charts-row2 .chart-card:nth-child(3) { grid-column: span 1; width:100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-container"></div>
+    <div class="header">
+        <h1>合院九州·典型合院式民居对比可视化平台</h1>
+    </div>
+
+    <div class="analysis-page" id="analysisPage">
+        <!-- 左侧菜单 -->
+        <div class="menu-column">
+            <button class="main-menu-btn" id="menu1">典型民居图鉴</button>
+            <button class="main-menu-btn active" id="menu2">民居对比分析</button>
+            
+            <div class="sub-menu-container" id="subMenu">
+                <button class="sub-menu-item" data-type="history">历史发展</button>
+                <button class="sub-menu-item" data-type="adaptation">地域适应</button>
+                <button class="sub-menu-item" data-type="wisdom">建筑智慧</button>
+                <button class="sub-menu-item" data-type="culture">文化关联</button>
+                <button class="sub-menu-item active" data-type="modern">现代发展</button>
+            </div>
+        </div>
+
+        <!-- 右侧图表区域 -->
+        <div class="right-content">
+            <!-- 第一行：top-charts 左右两个图表 -->
+            <div class="top-charts">
+                <div class="card chart-card">
+                    <div class="chart-title">古村落登记数量增长趋势</div>
+                    <div id="timelineBarChart" style="width:100%;height:100%;"></div>
+                </div>
+                <div class="card chart-card">
+                    <div class="chart-title">合院式民居客流量趋势</div>
+                    <div id="flowLineChart" style="width:100%;height:100%;"></div>
+                </div>
+            </div>
+            
+            <!-- 第二部分：两行图表（第一行2个，第二行3个） -->
+            <div class="bottom-charts-container" style="display:flex;flex-direction:column;gap:24px;height:100%;">
+                <!-- 第一行2个占位框 -->
+                <div class="bottom-charts-row1">
+                    <div class="card chart-card">
+                        <div class="chart-title">北京四合院</div>
+                        <!-- 覆盖图：点击后渐隐 -->
+                        <div class="chart-cover" id="chart1Cover">
+                            <img src="assets/data/images/现代照片/雨儿胡同.jpg" alt="雨儿胡同封面">
+                        </div>
+                        <div id="chart1" style="width:100%;height:100%;min-height:200px;margin-top:40px;"></div>
+                    </div>
+                    <div class="card chart-card">
+                        <div class="chart-title">徽派民居</div>
+                        <div class="chart-cover" id="chart2Cover">
+                            <img src="assets/data/images/现代照片/西溪南镇.png" alt="西溪南镇封面">
+                        </div>
+                        <div id="chart2" style="width:100%;height:100%;min-height:200px;margin-top:40px;"></div>
+                    </div>
+                </div>
+                <!-- 第二行3个占位框 -->
+                <div class="bottom-charts-row2">
+                    <div class="card chart-card">
+                        <div class="chart-title">广府镬耳屋</div>
+                        <div class="chart-cover" id="chart3Cover">
+                            <img src="assets/data/images/现代照片/镬耳屋.png" alt="镬耳屋封面">
+                        </div>
+                        <div id="chart3" style="width:100%;height:100%;min-height:200px;margin-top:40px;"></div>
+                    </div>
+                    <div class="card chart-card">
+                        <div class="chart-title">云南一颗印</div>
+                        <div class="chart-cover" id="chart4Cover">
+                            <img src="assets/data/images/现代照片/卧龙古渔村.jpg" alt="卧龙古渔村封面">
+                        </div>
+                        <div id="chart4" style="width:100%;height:100%;min-height:200px;margin-top:40px;"></div>
+                    </div>
+                    <div class="card chart-card">
+                        <div class="chart-title">西北窑洞</div>
+                        <div class="chart-cover" id="chart5Cover">
+                            <img src="assets/data/images/现代照片/西北窑洞.jpg" alt="西北窑洞封面">
+                        </div>
+                        <div id="chart5" style="width:100%;height:100%;min-height:200px;margin-top:40px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/sub5.js"></script>
+</body>
+</html>
