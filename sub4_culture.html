@@ -11,7 +11,6 @@
     <!-- 引入书法字体 -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        /* 右侧内容布局调整 - 核心修改：改为1列布局 */
         .right-content {
             display: grid;
             grid-template-columns: 1fr 1fr; /* 左侧旭日图，右侧竖列 */
@@ -19,12 +18,12 @@
             height: 100%;
         }
         
-        /* 左侧：建筑布局与家族规模（旭日图）- 保持上下撑满 */
+        /* 左侧：建筑布局与家族规模（旭日图） */
         .left-chart {
             height: 100%;
         }
         
-        /* 右侧：竖列容器 - 包含柱状图和轮播图 */
+        /* 右侧：竖列容器 包含柱状图和轮播图 */
         .right-column {
             display: flex;
             flex-direction: column;
@@ -32,14 +31,13 @@
             height: 100%;
         }
         
-        /* 调整图表容器高度，确保上下分布合理 */
         .chart-card {
             height: 100%;
             display: flex;
             flex-direction: column;
         }
         
-        /* 图表容器样式 */
+        /* 图表容器 */
         #familySizeChart {
             width: 100%;
             margin-top: 70px;
@@ -47,7 +45,7 @@
             min-height: 200px;
             position: relative;
             z-index: 5;
-            height: 100%; /* 确保旭日图撑满容器 */
+            height: 100%;
         }
         
         #functionalAreaChart {
@@ -68,14 +66,12 @@
             z-index: 5;
         }
         
-        /* 调整柱状图X轴字体大小 - 核心修改 */
-        /* 给柱状图容器添加特殊类，方便JS中调整样式 */
         .bar-chart-container {
             width: 100%;
             height: 100%;
         }
         
-        /* 横向轮播图样式 */
+        /* 横向轮播图 */
         .carousel-container {
             position: relative;
             width: 100%;
@@ -86,7 +82,7 @@
         .carousel-track {
             display: flex;
             height: 100%;
-            transition: transform 0.5s linear; /* 匀速滚动 */
+            transition: transform 0.5s linear;
         }
 
         .carousel-slide {
@@ -110,8 +106,8 @@
 
         .image-item {
             position: relative;
-            width: 30%; /* 每张图占30%宽度，留出间距 */
-            height: 75%; /* 适配容器 */
+            width: 30%;
+            height: 75%;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -126,7 +122,7 @@
             border: 1px solid #f0e6d2;
         }
 
-        /* 跟随光标弹窗样式 */
+        /* 跟随光标弹窗 */
         .carousel-tooltip {
             position: fixed; /* 固定定位跟随光标 */
             padding: 12px;
@@ -193,7 +189,7 @@
 
         /* 响应式适配 */
         @media (max-width: 992px) {
-            /* 移动端恢复单列布局 */
+            /* 移动端 单列布局 */
             .right-content {
                 grid-template-columns: 1fr;
                 grid-template-rows: 1fr 1fr 1fr;
@@ -324,15 +320,11 @@
     <div class="carousel-tooltip" id="followTooltip"></div>
 
     <script>
-        // 页面加载完成后调整柱状图X轴字体大小
         document.addEventListener('DOMContentLoaded', function() {
-            // 等待ECharts初始化完成
             setTimeout(function() {
-                // 获取柱状图实例并调整X轴字体大小
                 const functionalAreaChart = echarts.getInstanceByDom(document.getElementById('functionalAreaChart'));
                 if (functionalAreaChart) {
                     const option = functionalAreaChart.getOption();
-                    // 调整X轴字体大小（设置为16px，可根据需要修改）
                     if (option.xAxis && option.xAxis[0]) {
                         option.xAxis[0].axisLabel = option.xAxis[0].axisLabel || {};
                         option.xAxis[0].axisLabel.fontSize = 16; // 调大字体大小
